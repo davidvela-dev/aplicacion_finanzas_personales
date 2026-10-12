@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+
+on: # ejecucion con push y pull de main
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_test: # vm  de pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del codigo
+        uses: actions/checkout@v4 
+        with:
+          fetch-depth: 0
+
+      - name: Validar Conventional Commits
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          REGEX="^(feat|fix|docs|refactor|chore|style|test|perf|ci|build|revert)(\(.+\))?: .+"
+          if [[ ! $COMMIT_MSG =~ $REGEX ]]; then
+            echo "Error: El commit '$COMMIT_MSG' no sigue la convencion (feat, fix, docs, refactor, chore, test...)."
+            exit 1
+          fi
+
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2 
+        with:
+          channel: 'stable'
+
+      - name: Instalar dependencias
+        run: flutter pub get 
+
+      - name: Verificar formato de codigo
+        run: dart format --output=none --set-exit-if-changed . 
+
+      - name: Ejecutar Linter
+        run: flutter analyze 
+
+      - name: Ejecutar Pruebas Unitarias
+        run: flutter test 

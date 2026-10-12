@@ -1,0 +1,22 @@
+name: aplicacion_finanzas_personales # nombre unico del paquete de la aplicacion
+description: "Aplicacion movil de finanzas personales para registrar, organizar y visualizar ingresos, gestionando los datos de forma local"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies: # dependencias de la aplicacion
+  flutter: 
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies: # dependencias de desarrollo
+  flutter_test: # pruebas unitarias
+    sdk: flutter
+
+  flutter_lints: ^6.0.0 # pruebas estaticas
+
+flutter:
+  uses-material-design: true # biblioteca material design

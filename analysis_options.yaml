@@ -1,0 +1,24 @@
+include: package:flutter_lints/flutter.yaml # analisis estatico
+
+analyzer: # configuracion del motor de analisis de dart
+  exclude: # carpetas ignoradas
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+    - .dart_tool/** #
+
+linter: # reglas de estilo
+  rules: 
+    avoid_print: true # bloquear prints para usar logs
+    prefer_single_quotes: true # comillas simples
+    require_trailing_commas: true # comas al final
+    prefer_const_constructors: true # const para instanciar widgets
+    prefer_const_declarations: true # const para variables locales
+    sort_child_properties_last: true # ultimo elemento declarado child o children
+    unrelated_type_equality_checks: true # errores logicos
+    always_declare_return_types: true # declarar tipos en funciones
+    use_build_context_synchronously: true # valida si existe widget antes de operacion asincrona
