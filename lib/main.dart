@@ -26,10 +26,15 @@ class MyApp extends StatelessWidget {
       routes: {
         Rutas.login: (context) => const LoginView(),
         Rutas.registro: (context) => const RegistroView(),
-        Rutas.inicio: (context) => const ViewsLayout(), // carga la vista con menu y pantallas dinamicas
         Rutas.edicion: (context) => const EdicionView(),
         Rutas.categorias: (context) => const CategoriasView(),
         Rutas.subir: (context) => const SubirView(),
+
+        // pantallas del mismo layout con distinto indice
+        Rutas.inicio: (context) => const ViewsLayout(initialIndex: 0),
+        Rutas.movimientos: (context) => const ViewsLayout(initialIndex: 1),
+        Rutas.presupuestos: (context) => const ViewsLayout(initialIndex: 2),
+        Rutas.reportes: (context) => const ViewsLayout(initialIndex: 3),
       },
     );
   }

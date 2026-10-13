@@ -7,14 +7,23 @@ import 'presupuestos.dart';
 import 'reportes.dart';
 
 class ViewsLayout extends StatefulWidget {
-  const ViewsLayout({super.key});
+  final int initialIndex; // variable para guardar pestaña inicial
+
+  const ViewsLayout({super.key, this.initialIndex = 0});
 
   @override
   State<ViewsLayout> createState() => _ViewsLayoutState();
 }
 
 class _ViewsLayoutState extends State<ViewsLayout> {
-  int _currentIndex = 0;
+  late int _currentIndex; // inicializar al cargar la vista
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex =
+        widget.initialIndex; // se asigna indice de la ruta principa;
+  }
 
   // lista de pantallas con indices
   final List<Widget> _pantallas = const [
@@ -41,7 +50,6 @@ class _ViewsLayoutState extends State<ViewsLayout> {
             Colors.black, // color negro para elementos seleccionados
         unselectedItemColor:
             Colors.grey, // color gris para elementos no seleccionados
-
         showUnselectedLabels:
             false, // no mostrar label de elementos no seleccionados
         showSelectedLabels:
