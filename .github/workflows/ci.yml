@@ -6,8 +6,8 @@ on: # ejecucion con push y pull de main
   pull_request:
     branches: [ "main" ]
 
-jobs:
-  build_and_test: # vm  de pruebas
+jobs: # job que se ejecuta en github
+  build_and_test: # vm de pruebas
     runs-on: ubuntu-latest
 
     steps:
@@ -19,6 +19,14 @@ jobs:
       - name: Validar Conventional Commits
         run: |
           COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+
+          # Omitir la validacion para commits automaticos del sistema o GitHub
+          if [[ "$COMMIT_MSG" =~ ^Merge || "$COMMIT_MSG" =~ ^Revert || "$COMMIT_MSG" =~ ^Auto\ merge || "$COMMIT_MSG" =~ ^Update || "$COMMIT_MSG" =~ Merge\ .*into\ .* ]]; then
+            echo "Commit automatico o de sistema detectado ('$COMMIT_MSG'). Omitiendo validacion."
+            exit 0
+          fi
+
+          # Validar formato para commits manuales del desarrollador
           REGEX="^(feat|fix|docs|refactor|chore|style|test|perf|ci|build|revert)(\(.+\))?: .+"
           if [[ ! $COMMIT_MSG =~ $REGEX ]]; then
             echo "Error: El commit '$COMMIT_MSG' no sigue la convencion (feat, fix, docs, refactor, chore, test...)."
@@ -40,4 +48,4 @@ jobs:
         run: flutter analyze 
 
       - name: Ejecutar Pruebas Unitarias
-        run: flutter test 
+        run: flutter test
