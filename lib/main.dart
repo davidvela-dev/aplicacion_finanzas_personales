@@ -6,13 +6,10 @@ import 'constants/rutas.dart';
 // pantallas
 import 'views/login.dart';
 import 'views/registro.dart';
-import 'views/inicio.dart';
-import 'views/movimientos.dart';
 import 'views/edicion.dart';
-import 'views/presupuestos.dart';
-import 'views/reportes.dart';
 import 'views/categorias.dart';
 import 'views/subir.dart';
+import 'views/views_layout.dart'; // layout carga las pantallas inicio, movimientos, presupuestos y registros
 
 void main() => runApp(const MyApp());
 
@@ -22,17 +19,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: Rutas.login,
+      initialRoute: Rutas.inicio, // ruta inicial saltando la autenticacion
+      // initialRoute: Rutas.login,
 
       // diccionario de rutas nombradas
       routes: {
         Rutas.login: (context) => const LoginView(),
         Rutas.registro: (context) => const RegistroView(),
-        Rutas.inicio: (context) => const InicioView(),
-        Rutas.movimientos: (context) => const MovimientosView(),
+        Rutas.inicio: (context) => const ViewsLayout(), // carga la vista con menu y pantallas dinamicas
         Rutas.edicion: (context) => const EdicionView(),
-        Rutas.presupuestos: (context) => const PresupuestosView(),
-        Rutas.reportes: (context) => const ReportesView(),
         Rutas.categorias: (context) => const CategoriasView(),
         Rutas.subir: (context) => const SubirView(),
       },

@@ -9,17 +9,7 @@ class LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
-      body: const Center(
-        child: Text('Pantalla de Login'),
-        /* 
-        child: ElevatedButton(
-          onPressed: () {
-            // Navigator.pushNamed(context, Rutas.registro);
-          },
-          child: const Text('Ir a Registro'),
-        ),
-        */
-      ),
+      body: const Center(child: Text('Pantalla de Login')),
     );
   }
 }
