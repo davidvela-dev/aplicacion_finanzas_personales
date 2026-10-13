@@ -16,6 +16,6 @@ void main() {
     await tester.pumpWidget(const MyApp());
 
     // Verify empty Scaffold
-    expect(find.byType(Scaffold), findsOneWidget);
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }

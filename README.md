@@ -144,6 +144,16 @@ lib/
 
 ### 6.2 Subir Cambios a Repositorio
 
-- **Formateo Local** `dart format .`
+#### Correr en Local
+
+- **Formateo Automatico** `dart format .`
 - **Analisis Estatico** `flutter analyze`
 - **Pruebas Unitarias** `flutter test`
+
+#### Proteccion de Rama Main
+
+- require a pull request before merging 
+- require status checks to pass before merging
+- require branches to be up to date before merging
+- status checks: build_and_test
+- do not allow bypassing the above settings
