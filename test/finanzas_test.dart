@@ -1,0 +1,38 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:aplicacion_finanzas_personales/models/movimiento.dart';
+import 'package:aplicacion_finanzas_personales/viewmodels/finanzas_provider.dart';
+
+void main() {
+  test('Ingresos, gastos y presupuesto usan los mismos datos', () {
+    final datos = FinanzasProvider();
+    expect(datos.ingresos, 9500);
+    expect(datos.gastos, closeTo(5930, 0.001));
+    expect(datos.balance, closeTo(3570, 0.001));
+    expect(datos.gastoCategoria('Alimentación'), closeTo(2180, 0.001));
+    expect(datos.limiteTotal, 7000);
+  });
+
+  test('Alta, edición y eliminación actualizan el balance sin duplicar', () {
+    final datos = FinanzasProvider();
+    final balance = datos.balance;
+    final nuevo = Movimiento(
+      titulo: 'Café',
+      categoria: 'Alimentación',
+      monto: 65,
+      fecha: DateTime(2026, 9, 3),
+    );
+    datos.guardarMovimiento(nuevo);
+    expect(datos.balance, closeTo(balance - 65, 0.001));
+    final editado = Movimiento(
+      titulo: 'Café',
+      categoria: 'Alimentación',
+      monto: 50,
+      fecha: nuevo.fecha,
+    );
+    datos.guardarMovimiento(editado, anterior: nuevo);
+    expect(datos.balance, closeTo(balance - 50, 0.001));
+    expect(datos.movimientos.where((m) => m.titulo == 'Café').length, 1);
+    datos.eliminarMovimiento(editado);
+    expect(datos.balance, closeTo(balance, 0.001));
+  });
+}

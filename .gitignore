@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Paquete de Canvas generado, sin recursión ni duplicados en Git.
+entrega1/*.zip

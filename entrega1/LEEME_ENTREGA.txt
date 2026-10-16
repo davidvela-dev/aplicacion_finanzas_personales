@@ -1,0 +1,25 @@
+SALDO - PRIMERA ENTREGA DEL PROYECTO FINAL
+
+Contenido:
+- lib/: código de pantallas, widgets, modelos y Provider.
+- pubspec.yaml y pubspec.lock: dependencias de la app.
+- entrega1/reporte_entrega1.pdf: reporte con capturas y descripciones.
+- entrega1/capturas/: imágenes originales del simulador iOS.
+- assets/identidad/: icono de Saldo.
+- ios/ y android/: nombre visible e iconos nativos.
+- docs/entrega1.md: recorrido y guía para explicar el código.
+
+Antes de subir a Canvas:
+1. Cada integrante debe revisar el borrador de su conclusión en el reporte.
+2. Agregar al ZIP el video que grabará Vittorio, de menos de dos minutos.
+
+Para ejecutar, usar el repositorio completo:
+https://github.com/davidvela-dev/aplicacion_finanzas_personales
+Rama: entrega1-finanzas
+
+Abrir la app Saldo y pulsar "Explorar versión de muestra".
+No se necesitan credenciales reales.
+
+Esta etapa implementa interfaz y navegación. Los datos y ajustes son temporales;
+SQLite, autenticación, importación real, exportación CSV y notificaciones quedan
+pendientes y se indican mediante alertas en las pantallas correspondientes.

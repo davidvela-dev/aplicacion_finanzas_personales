@@ -7,6 +7,18 @@
 
 # Aplicacion de Finanzas Personales
 
+## Entrega 1: Saldo
+
+La interfaz de la primera entrega está en la rama `entrega1-finanzas`.
+Recorrido, alcance, paquetes, pendientes y explicación del código en
+[docs/entrega1.md](docs/entrega1.md).
+
+Antes de cada commit y push: `dart format .`, `flutter analyze`, `flutter test`.
+Activar los hooks locales con `git config core.hooksPath .githooks`.
+
+El resto de este README conserva la propuesta completa del equipo. SQLite,
+importación bancaria y notificaciones pertenecen a las etapas posteriores.
+
 Aplicacion movil multiplataforma diseñada para ayudar a estudiantes y jovenes profesionistas a registrar, organizar y visualizar sus ingresos y gastos diarios de manera intuitiva y sin necesidad de conexion a internet
 
 ## 1- Autores del Proyecto
