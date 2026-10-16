@@ -61,9 +61,32 @@ y https://api.flutter.dev/flutter/material/Tooltip-class.html
 - Exportación CSV y notificaciones reales del dispositivo.
 - Gráficas basadas en histórico real en lugar de ejemplos.
 
-El factor WOW propuesto es importar estados de cuenta y sugerir categorías sin
-vincular cuentas bancarias. Su espacio está en Estados de cuenta, con avisos
-explícitos de que la integración aún está pendiente.
+## Factor WOW: importación de estados de cuenta reales en PDF
+
+En la segunda etapa se plantea seleccionar un estado de cuenta bancario real en
+PDF, reconocer los ingresos y gastos de su mes o periodo y registrarlos en la
+aplicación después de la revisión y confirmación del usuario. Se extraerán fecha,
+descripción, importe y tipo de operación. Se revisarán posibles duplicados y filas
+incorrectas antes de guardar el conjunto de movimientos en SQLite y actualizar
+el balance y los reportes. La captura manual seguirá disponible.
+
+La meta incluye bancos como Santander, BBVA (antes Bancomer), Scotiabank y otros.
+La compatibilidad se validará de forma gradual, empezando con un formato: cada
+banco puede distribuir sus columnas y operaciones de manera diferente.
+
+Herramientas candidatas, todavía sin instalar:
+
+- `file_picker`: elegir el documento local.
+- `pdfrx` / `pdfrx_engine`: abrir el PDF y extraer el texto de sus páginas.
+- `google_mlkit_text_recognition`: evaluar OCR si el PDF contiene imágenes
+  escaneadas, después de convertir sus páginas a imágenes.
+
+Extraer texto no equivale a reconocer transacciones bancarias. El equipo tendrá
+que implementar y probar las reglas por formato, la revisión de importes y la
+detección de duplicados. No se promete compatibilidad universal ni lectura de
+cualquier PDF protegido o escaneado. Se plantea procesamiento local sin vincular
+credenciales bancarias. En la entrega 1 solo está la interfaz de Estados de cuenta
+y su revisión ilustrativa, con las alertas de funcionalidad pendiente.
 
 ## Verificaciones y Git
 

@@ -60,8 +60,23 @@ for titulo, texto in [
 ]:
     contenido += [parrafo(titulo, 'h2'), parrafo(texto)]
 contenido += [parrafo('Dos widgets propuestos como nuevos', 'h2'), parrafo('<b>ExpansionTile:</b> permite abrir y cerrar la sección Acerca de Saldo y la explicación del factor WOW.<br/><b>Tooltip:</b> al mantener presionada una barra de gasto diario muestra su valor. Ambos tienen una función pequeña y fácil de explicar. Confirmar con el profesor que no se hayan revisado antes en clase.')]
-contenido += [parrafo('Factor WOW propuesto', 'h2'), parrafo('Importar un estado de cuenta PDF o CSV, reconocer movimientos y sugerir categorías sin conectar una cuenta bancaria. La pantalla Estados de cuenta reserva el espacio y permite ver una revisión de ejemplo. El selector real, la extracción, el reconocimiento de duplicados y el guardado quedan para etapas posteriores.')]
+contenido += [parrafo('Factor WOW propuesto', 'h2'), parrafo('Importar un estado de cuenta bancario real en PDF y registrar automáticamente los ingresos y gastos del mes, después de una revisión del usuario. Su implementación se plantea para la segunda etapa. La siguiente página detalla el flujo y las herramientas que se evaluarán; en esta entrega solo está la interfaz de muestra.')]
 contenido += [parrafo('Referencias técnicas', 'h2'), parrafo('pub.dev/packages/fl_chart<br/>pub.dev/packages/provider<br/>api.flutter.dev/flutter/material/ExpansionTile-class.html<br/>api.flutter.dev/flutter/material/Tooltip-class.html', 'pequeno'), PageBreak()]
+
+contenido += [parrafo('Factor WOW: del PDF a tus movimientos', 'h1')]
+contenido += [parrafo('La idea del equipo', 'h2'), parrafo('El usuario podrá importar un estado de cuenta real en PDF y Saldo identificará los ingresos y gastos correspondientes al mes o periodo del documento. Después de revisar y confirmar la información, se registrarán los movimientos en la aplicación y se actualizarán el balance y los reportes. Así se evita capturar cada operación manualmente, conservando también esa opción.')]
+contenido += [parrafo('Flujo previsto para la segunda etapa', 'h2')]
+for texto in [
+    '<b>1. Elegir el documento.</b> Seleccionar desde el teléfono el PDF del estado de cuenta y reconocer su banco y periodo.',
+    '<b>2. Leer el contenido.</b> Extraer el texto de los PDF digitales. Si las páginas son imágenes escaneadas, evaluar su conversión a imágenes y reconocimiento óptico de caracteres (OCR).',
+    '<b>3. Reconocer las operaciones.</b> Obtener fecha, descripción, importe y tipo de movimiento (ingreso o gasto), sin confundir encabezados, saldos o totales del documento con transacciones.',
+    '<b>4. Revisar antes de registrar.</b> Mostrar las operaciones detectadas; permitir corregir datos dudosos, descartar filas y revisar posibles duplicados. Las categorías podrán sugerirse para su confirmación.',
+    '<b>5. Importar el periodo.</b> Al confirmar, guardar el conjunto de movimientos en SQLite y actualizar el historial, el balance y las gráficas de la aplicación.',
+]:
+    contenido += [parrafo(texto)]
+contenido += [parrafo('Bancos y alcance gradual', 'h2'), parrafo('La meta es aceptar estados de cuenta de bancos como Santander, BBVA (antes Bancomer), Scotiabank y otros. Como cada banco puede usar columnas y formatos distintos, primero se probará un formato concreto y después se ampliará la compatibilidad. No se garantiza todavía la lectura correcta de cualquier banco, ni de todos los PDF escaneados o protegidos.')]
+contenido += [parrafo('Herramientas de Flutter por evaluar', 'h2'), parrafo('<b>file_picker:</b> selección del PDF local. <b>pdfrx / pdfrx_engine:</b> lectura y extracción del texto de páginas PDF. <b>google_mlkit_text_recognition:</b> posible apoyo de OCR para páginas convertidas a imágenes. Estas herramientas cubren partes del flujo; el equipo desarrollará las reglas que conviertan el texto bancario en movimientos. Son opciones de evaluación, no paquetes ya instalados ni una integración terminada.')]
+contenido += [parrafo('Estado actual y referencias', 'h2'), parrafo('Entrega 1: pantalla Estados de cuenta y revisión ilustrativa. Etapa 2: implementación y pruebas de la importación real. El procesamiento se plantea de forma local, sin vincular credenciales bancarias.', 'pequeno'), parrafo('pub.dev/packages/file_picker<br/>pub.dev/packages/pdfrx<br/>pub.dev/documentation/pdfrx_engine/latest/pdfrx_engine/PdfPage/loadText.html<br/>pub.dev/packages/google_mlkit_text_recognition', 'pequeno'), PageBreak()]
 
 capturas = [
     ('01_login', '01 / Inicio de sesión', 'Acceso, contraseña visible u oculta y recuperación. La autenticación está pendiente; el botón de muestra entra a la app.'),
