@@ -8,6 +8,7 @@ import '../widgets/componentes.dart';
 class InicioView extends StatelessWidget {
   const InicioView({super.key, this.onVerTodo});
   final VoidCallback? onVerTodo;
+
   @override
   Widget build(BuildContext context) {
     final datos = context.watch<FinanzasProvider>();
@@ -16,7 +17,7 @@ class InicioView extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 86),
       children: [
         Encabezado(
-          titulo: 'Hola, ${datos.nombre} 👋',
+          titulo: 'Hola, ${datos.nombre}',
           subtitulo: 'SEPTIEMBRE 2026 · TU RESUMEN',
           accion: IconButton(
             tooltip: datos.ocultarMontos ? 'Mostrar montos' : 'Ocultar montos',
@@ -151,6 +152,7 @@ class _Resumen extends StatelessWidget {
   final String monto;
   final IconData icono;
   final Color color;
+
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(13),
@@ -189,6 +191,7 @@ class _Resumen extends StatelessWidget {
 
 class BarrasSemanales extends StatelessWidget {
   const BarrasSemanales({super.key});
+
   @override
   Widget build(BuildContext context) => SizedBox(
     height: 94,

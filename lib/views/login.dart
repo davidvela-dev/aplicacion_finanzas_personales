@@ -25,18 +25,8 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _entrar() {
-    if (!_correo.text.contains('@') || _clave.text.length < 6) {
-      aviso(
-        context,
-        'Escribe un correo válido y una contraseña de al menos 6 caracteres.',
-      );
-      return;
-    }
-    mostrarPendiente(
-      context,
-      'Inicio de sesión de muestra',
-      'Aquí se validarán tus credenciales. Por ahora puedes explorar con datos de ejemplo.',
-    );
+    context.read<FinanzasProvider>().iniciarSesion('Usuario');
+    Navigator.pushReplacementNamed(context, Rutas.inicio);
   }
 
   @override
