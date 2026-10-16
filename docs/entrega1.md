@@ -39,6 +39,8 @@ proceso se restablecen. No hay SQLite ni autenticación real en esta entrega.
 | Widget nuevo 2 | `lib/views/inicio.dart` | `Tooltip` muestra el gasto al mantener presionada una barra. |
 
 No se usa generación de código, servicios en la nube ni arquitectura avanzada.
+La función `dinero` de `lib/constants/tema.dart` separa los decimales y usa un
+ciclo `for` para insertar comas cada tres dígitos; no usa expresiones regulares.
 Revisar especialmente cada función antes de presentar: el profesor pide que
 todos entiendan el código y limita el uso de IA a apoyos específicos.
 

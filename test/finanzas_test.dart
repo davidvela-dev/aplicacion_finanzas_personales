@@ -1,8 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:aplicacion_finanzas_personales/constants/tema.dart';
 import 'package:aplicacion_finanzas_personales/models/movimiento.dart';
 import 'package:aplicacion_finanzas_personales/viewmodels/finanzas_provider.dart';
 
 void main() {
+  test('Formato de dinero conserva decimales, miles y signo', () {
+    expect(dinero(0), r'$0.00');
+    expect(dinero(65.1), r'$65.10');
+    expect(dinero(1234.5), r'$1,234.50');
+    expect(dinero(1000000), r'$1,000,000.00');
+    expect(dinero(-65.1), r'-$65.10');
+  });
   test('Ingresos, gastos y presupuesto usan los mismos datos', () {
     final datos = FinanzasProvider();
     expect(datos.ingresos, 9500);

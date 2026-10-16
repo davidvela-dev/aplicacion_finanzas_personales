@@ -131,6 +131,8 @@ for nombre, texto in [
 ]:
     contenido += [parrafo(nombre, 'h2'), parrafo(escape(texto))]
 
+contenido += [Spacer(1, 24), parrafo('Se utilizó inteligencia artificial (IA) como apoyo para el formato, la organización visual y la presentación estética de este documento.', 'pequeno')]
+
 documento = SimpleDocTemplate(str(SALIDA / 'reporte_entrega1.pdf'), pagesize=A4, rightMargin=42, leftMargin=42, topMargin=42, bottomMargin=56, title='Saldo - Primera entrega del proyecto final', author='David Valdez Martinez, Vittorio Catino y David Vela')
 documento.build(contenido, onFirstPage=pie, onLaterPages=pie)
 print(SALIDA / 'reporte_entrega1.pdf')

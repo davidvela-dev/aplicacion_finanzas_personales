@@ -63,9 +63,13 @@ ThemeData crearTema(Brightness brillo) {
 
 String dinero(double cantidad) {
   final partes = cantidad.abs().toStringAsFixed(2).split('.');
-  final entero = partes[0].replaceAllMapped(
-    RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-    (coincidencia) => '${coincidencia[1]},',
-  );
+  var entero = '';
+  // Agregar una coma antes de cada grupo de tres dígitos, contando desde la derecha.
+  for (var i = 0; i < partes[0].length; i++) {
+    if (i > 0 && (partes[0].length - i) % 3 == 0) {
+      entero += ',';
+    }
+    entero += partes[0][i];
+  }
   return '${cantidad < 0 ? '-' : ''}\$$entero.${partes[1]}';
 }
