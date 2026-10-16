@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+while read -r referencia_local sha_local referencia_remota sha_remota; do
+  if [ "$referencia_remota" = refs/heads/main ]; then
+    echo 'Sube la rama de trabajo y usa un pull request para integrar a main.' >&2
+    exit 1
+  fi
+done
+sh scripts/verificar.sh
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo 'Hay cambios sin commit. Revisa, verifica y guarda antes del push.' >&2
+  exit 1
+fi
