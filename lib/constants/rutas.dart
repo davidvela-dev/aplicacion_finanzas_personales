@@ -8,4 +8,6 @@ class Rutas {
   static const String reportes = '/reportes';
   static const String categorias = '/categorias';
   static const String subir = '/subir';
+  static const String ajustes = '/ajustes';
+  static const String alertas = '/alertas';
 }
