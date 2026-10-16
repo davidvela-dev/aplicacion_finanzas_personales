@@ -118,21 +118,18 @@ for inicio in range(0, len(capturas), 3):
     tabla = Table([celdas], colWidths=[170, 170, 170], hAlign='LEFT')
     tabla.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0), ('RIGHTPADDING', (0, 0), (-1, -1), 15)]))
     contenido += [tabla]
-    if inicio + 3 >= len(capturas):
-        contenido += [Spacer(1, 16), parrafo('Cómo presentar la navegación', 'h2'), parrafo('Entrar a la muestra; recorrer las cuatro pestañas; abrir captura, categorías, importación y alertas; activar modo oscuro y regresar al inicio. Mostrar una alerta de función pendiente. El video lo grabará el equipo y debe durar menos de dos minutos.')]
     contenido += [PageBreak()]
 
 contenido += [parrafo('Cierre de la primera etapa', 'h1')]
 contenido += [parrafo('Verificación realizada', 'h2'), parrafo('Formateo con dart format ., análisis con flutter analyze y pruebas con flutter test. Además se ejecutó un recorrido en el simulador para revisar navegación y generar las capturas. La carpeta de pruebas permite repetir estas comprobaciones.')]
 contenido += [parrafo('Pendientes para la siguiente entrega', 'h2'), parrafo('Autenticación, SQLite, persistencia de preferencias, exportación CSV, importación real de archivos y notificaciones locales. Los botones relacionados muestran una explicación; no se presentan como funciones ya integradas.')]
-contenido += [parrafo('Conclusiones individuales', 'h2'), parrafo('Borradores sugeridos para revisión de cada integrante. Deben ajustarse a lo que realmente aprendió y realizó cada persona antes de entregar.', 'pequeno')]
+contenido += [parrafo('Conclusiones individuales', 'h2')]
 for nombre, texto in [
     ('David Valdez Martinez', 'Con esta parte me quedó más claro cómo dividir una app en pantallas y componentes sin poner todo en main. Lo que más trabajo puede dar es que los espacios y colores se vean parejos en todas las vistas. Me gustó que ya se pueda recorrer la idea completa, aunque los datos todavía sean de ejemplo.'),
     ('Vittorio Catino', 'La neta, ver la idea del mockup ya en el iPhone está muy padre. Aquí lo importante para mí es entender cómo se conectan las pantallas y cómo Provider hace que el modo oscuro cambie en toda la app. Lo más enredado fue cuidar que cada botón tuviera una respuesta y que nada se saliera de la pantalla. Todavía falta la parte de guardar de verdad, pero esta primera entrega ya nos deja una base para seguirle metiendo mano.'),
     ('David Vela', 'Esta entrega me ayudó a aterrizar mejor la navegación que ya habíamos empezado en el repo. Tener archivos separados hace más fácil ubicar qué cambiar y revisar el trabajo entre todos. Me gustó conectar el menú con las pantallas y ver los reportes. Para lo que sigue toca mantener esta organización y conectar los datos sin romper lo que ya funciona.'),
 ]:
     contenido += [parrafo(nombre, 'h2'), parrafo(escape(texto))]
-contenido += [parrafo('Revisión antes de subir', 'h2'), parrafo('Revisar las conclusiones, agregar el video del equipo al ZIP y confirmar la rama con los demás integrantes. La entrega de Canvas incluye lib, pubspec.yaml y este reporte. El nombre e icono nativos también están incluidos como recurso adicional.')]
 
 documento = SimpleDocTemplate(str(SALIDA / 'reporte_entrega1.pdf'), pagesize=A4, rightMargin=42, leftMargin=42, topMargin=42, bottomMargin=56, title='Saldo - Primera entrega del proyecto final', author='David Valdez Martinez, Vittorio Catino y David Vela')
 documento.build(contenido, onFirstPage=pie, onLaterPages=pie)

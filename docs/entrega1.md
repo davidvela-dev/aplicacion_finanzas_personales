@@ -113,5 +113,4 @@ flutter drive --driver=test_driver/capturas.dart --target=integration_test/recor
 el PDF de reporte, capturas y el icono. El video lo graba Vittorio y debe durar
 menos de dos minutos; incorporarlo al ZIP antes de subirlo a Canvas.
 
-Las tres conclusiones del reporte son borradores sugeridos a petición de Vittorio.
-Cada integrante debe revisarlas y ajustarlas a su experiencia antes de entregar.
+Vittorio confirmó que el equipo revisó y aprobó las conclusiones del reporte.

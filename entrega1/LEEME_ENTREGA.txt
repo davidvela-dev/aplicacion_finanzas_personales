@@ -10,8 +10,7 @@ Contenido:
 - docs/entrega1.md: recorrido y guía para explicar el código.
 
 Antes de subir a Canvas:
-1. Cada integrante debe revisar el borrador de su conclusión en el reporte.
-2. Agregar al ZIP el video que grabará Vittorio, de menos de dos minutos.
+Agregar al ZIP el video que grabará Vittorio, de menos de dos minutos.
 
 Para ejecutar, usar el repositorio completo:
 https://github.com/davidvela-dev/aplicacion_finanzas_personales
