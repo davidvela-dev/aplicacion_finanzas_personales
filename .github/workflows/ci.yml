@@ -1,51 +1,54 @@
 name: CI/CD Pipeline
 
-on: # ejecucion con push y pull de main
+on: # execution with push and pull of main
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
-jobs: # job que se ejecuta en github
-  build_and_test: # vm de pruebas
+permissions: # read only for execution of this workflow
+  contents: read
+
+jobs:
+  build_and_test: # vm for testing
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout del codigo
+    steps: # validation steps
+      - name: Checkout of Source Code
         uses: actions/checkout@v4 
         with:
           fetch-depth: 0
 
-      - name: Validar Conventional Commits
+      - name: Validate Conventional Commit
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")   
 
-          # Omitir la validacion para commits automaticos del sistema o GitHub
+          # Ignore format from system and automatic commits
           if [[ "$COMMIT_MSG" =~ ^Merge || "$COMMIT_MSG" =~ ^Revert || "$COMMIT_MSG" =~ ^Auto\ merge || "$COMMIT_MSG" =~ ^Update || "$COMMIT_MSG" =~ Merge\ .*into\ .* ]]; then
             echo "Commit automatico o de sistema detectado ('$COMMIT_MSG'). Omitiendo validacion."
             exit 0
           fi
 
-          # Validar formato para commits manuales del desarrollador
+          # Validate format for manual commits from developers
           REGEX="^(feat|fix|docs|refactor|chore|style|test|perf|ci|build|revert)(\(.+\))?: .+"
           if [[ ! $COMMIT_MSG =~ $REGEX ]]; then
-            echo "Error: El commit '$COMMIT_MSG' no sigue la convencion (feat, fix, docs, refactor, chore, test...)."
+            echo "Error: Commit'$COMMIT_MSG' doesn't follow the convention (feat, fix, docs, refactor, chore, test...)."
             exit 1
           fi
 
-      - name: Configurar Flutter
+      - name: Flutter Setup
         uses: subosito/flutter-action@v2 
         with:
           channel: 'stable'
 
-      - name: Instalar dependencias
+      - name: Install Dependencies
         run: flutter pub get 
 
-      - name: Verificar formato de codigo
+      - name: Verifiy Format
         run: dart format --output=none --set-exit-if-changed . 
 
-      - name: Ejecutar Linter
+      - name: Execute Linter
         run: flutter analyze 
 
-      - name: Ejecutar Pruebas Unitarias
+      - name: Execute Unit Tests
         run: flutter test
