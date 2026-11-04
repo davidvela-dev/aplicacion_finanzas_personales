@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:provider/provider.dart';
+
+import '../constants/rutas.dart';
+import '../services/auth_service.dart';
+import '../viewmodels/finanzas_provider.dart';
 import '../widgets/componentes.dart';
 
 class RegistroView extends StatefulWidget {
@@ -10,13 +15,44 @@ class RegistroView extends StatefulWidget {
 
 class _RegistroViewState extends State<RegistroView> {
   final _formulario = GlobalKey<FormState>();
+  final _nombre = TextEditingController();
+  final _correo = TextEditingController();
   final _clave = TextEditingController();
+  bool _cargando = false;
   bool _acepta = false;
   bool _ocultar = true;
   @override
   void dispose() {
+    _nombre.dispose();
+    _correo.dispose();
     _clave.dispose();
     super.dispose();
+  }
+
+  Future<void> _crearCuenta() async {
+    if (!_formulario.currentState!.validate()) return;
+    if (!_acepta) {
+      aviso(context, 'Acepta el aviso de privacidad para continuar.');
+      return;
+    }
+    setState(() => _cargando = true);
+    try {
+      final user = await AuthService.registrar(
+        _nombre.text,
+        _correo.text,
+        _clave.text,
+      );
+      if (!mounted) return;
+      context.read<FinanzasProvider>().iniciarSesion(
+        AuthService.nombreDe(user),
+      );
+      Navigator.pushNamedAndRemoveUntil(context, Rutas.inicio, (_) => false);
+      aviso(context, 'Cuenta creada. Te enviamos un correo para verificarla.');
+    } catch (e) {
+      if (mounted) aviso(context, AuthService.mensaje(e));
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
   }
 
   @override
@@ -34,12 +70,14 @@ class _RegistroViewState extends State<RegistroView> {
           const MarcaSaldo(),
           const SizedBox(height: 26),
           TextFormField(
+            controller: _nombre,
             decoration: const InputDecoration(labelText: 'Nombre completo'),
             validator: (v) =>
                 (v ?? '').trim().isEmpty ? 'Escribe tu nombre' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
+            controller: _correo,
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(labelText: 'Correo electrónico'),
             validator: (v) =>
@@ -92,19 +130,14 @@ class _RegistroViewState extends State<RegistroView> {
             child: const Text('Consultar aviso'),
           ),
           FilledButton(
-            onPressed: () {
-              if (!_formulario.currentState!.validate()) return;
-              if (!_acepta) {
-                aviso(context, 'Acepta el aviso de privacidad para continuar.');
-                return;
-              }
-              mostrarPendiente(
-                context,
-                'Registro de muestra',
-                'Aquí se creará tu cuenta. Esta entrega no guarda cuentas ni contraseñas.',
-              );
-            },
-            child: const Text('Crear mi cuenta'),
+            onPressed: _cargando ? null : _crearCuenta,
+            child: _cargando
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Crear mi cuenta'),
           ),
           const EtiquetaDemo(),
         ],

@@ -143,6 +143,11 @@ class FinanzasProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void cerrarSesion() {
+    nombre = 'Vittorio';
+    notifyListeners();
+  }
+
   void guardarMovimiento(Movimiento movimiento, {Movimiento? anterior}) {
     if (anterior != null) movimientos.remove(anterior);
     movimientos.insert(0, movimiento);

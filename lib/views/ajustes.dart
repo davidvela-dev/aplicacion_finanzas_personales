@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/rutas.dart';
+import '../services/auth_service.dart';
 import '../viewmodels/finanzas_provider.dart';
 import '../widgets/componentes.dart';
 
@@ -38,9 +39,9 @@ class AjustesView extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Text(
-                        'Perfil de demostración',
-                        style: TextStyle(fontSize: 12),
+                      Text(
+                        AuthService.usuario?.email ?? 'Perfil de demostración',
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ],
                   ),
@@ -99,6 +100,19 @@ class AjustesView extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.pushNamed(context, Rutas.subir),
                 ),
+                if (AuthService.usuario != null &&
+                    !AuthService.usuario!.emailVerified)
+                  ListTile(
+                    leading: const Icon(Icons.mark_email_unread_outlined),
+                    title: const Text('Verificar correo electrónico'),
+                    subtitle: const Text('Reenviar el correo de verificación'),
+                    onTap: () async {
+                      await AuthService.reenviarVerificacion();
+                      if (context.mounted) {
+                        aviso(context, 'Correo de verificación enviado.');
+                      }
+                    },
+                  ),
                 ListTile(
                   leading: const Icon(Icons.ios_share),
                   title: const Text('Exportar mis movimientos'),
@@ -131,7 +145,7 @@ class AjustesView extends StatelessWidget {
               final salir = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('¿Salir de la muestra?'),
+                  title: const Text('¿Cerrar sesión?'),
                   content: const Text(
                     'Volverás a la pantalla de inicio de sesión.',
                   ),
@@ -148,6 +162,9 @@ class AjustesView extends StatelessWidget {
                 ),
               );
               if (salir == true && context.mounted) {
+                await AuthService.cerrarSesion();
+                if (!context.mounted) return;
+                context.read<FinanzasProvider>().cerrarSesion();
                 Navigator.pushNamedAndRemoveUntil(
                   context,
                   Rutas.login,
@@ -156,8 +173,51 @@ class AjustesView extends StatelessWidget {
               }
             },
             icon: const Icon(Icons.logout),
-            label: const Text('Cerrar sesión de muestra'),
+            label: Text(
+              AuthService.usuario == null
+                  ? 'Cerrar sesión de muestra'
+                  : 'Cerrar sesión',
+            ),
           ),
+          if (AuthService.usuario != null)
+            TextButton.icon(
+              onPressed: () async {
+                final borrar = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('¿Eliminar cuenta?'),
+                    content: const Text(
+                      'Se eliminará tu cuenta de Firebase. Esta acción no se puede deshacer.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancelar'),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Eliminar'),
+                      ),
+                    ],
+                  ),
+                );
+                if (borrar != true || !context.mounted) return;
+                try {
+                  await AuthService.eliminarCuenta();
+                  if (!context.mounted) return;
+                  context.read<FinanzasProvider>().cerrarSesion();
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    Rutas.login,
+                    (_) => false,
+                  );
+                } catch (e) {
+                  if (context.mounted) aviso(context, AuthService.mensaje(e));
+                }
+              },
+              icon: const Icon(Icons.delete_forever_outlined),
+              label: const Text('Eliminar cuenta'),
+            ),
           const EtiquetaDemo(),
         ],
       ),

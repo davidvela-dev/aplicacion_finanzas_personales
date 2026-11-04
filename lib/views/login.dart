@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/rutas.dart';
 import '../constants/tema.dart';
+import '../services/auth_service.dart';
 import '../viewmodels/finanzas_provider.dart';
 import '../widgets/componentes.dart';
 
@@ -16,6 +18,7 @@ class _LoginViewState extends State<LoginView> {
   final _correo = TextEditingController();
   final _clave = TextEditingController();
   bool _ocultar = true;
+  bool _cargando = false;
 
   @override
   void dispose() {
@@ -24,9 +27,42 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
+  /// Ejecuta un método de autenticación y, si funciona, entra a la app.
+  Future<void> _autenticar(Future<User> Function() accion) async {
+    setState(() => _cargando = true);
+    try {
+      final user = await accion();
+      if (!mounted) return;
+      context.read<FinanzasProvider>().iniciarSesion(
+        AuthService.nombreDe(user),
+      );
+      Navigator.pushReplacementNamed(context, Rutas.inicio);
+    } catch (e) {
+      if (mounted) aviso(context, AuthService.mensaje(e));
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
+  }
+
   void _entrar() {
-    context.read<FinanzasProvider>().iniciarSesion('Usuario');
-    Navigator.pushReplacementNamed(context, Rutas.inicio);
+    if (_correo.text.trim().isEmpty || _clave.text.isEmpty) {
+      aviso(context, 'Escribe tu correo y contraseña.');
+      return;
+    }
+    _autenticar(() => AuthService.iniciarConCorreo(_correo.text, _clave.text));
+  }
+
+  Future<void> _recuperar() async {
+    if (_correo.text.trim().isEmpty) {
+      aviso(context, 'Escribe tu correo para enviarte el enlace.');
+      return;
+    }
+    try {
+      await AuthService.recuperarClave(_correo.text);
+      if (mounted) aviso(context, 'Te enviamos un enlace de recuperación.');
+    } catch (e) {
+      if (mounted) aviso(context, AuthService.mensaje(e));
+    }
   }
 
   @override
@@ -86,15 +122,31 @@ class _LoginViewState extends State<LoginView> {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () => mostrarPendiente(
-                context,
-                'Recuperar contraseña',
-                'Se enviará un enlace de recuperación al correo registrado.',
-              ),
+              onPressed: _recuperar,
               child: const Text('¿Olvidaste tu contraseña?'),
             ),
           ),
-          FilledButton(onPressed: _entrar, child: const Text('Iniciar sesión')),
+          FilledButton(
+            onPressed: _cargando ? null : _entrar,
+            child: _cargando
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Iniciar sesión'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: _cargando
+                ? null
+                : () => _autenticar(AuthService.iniciarConGoogle),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+            ),
+            icon: const Icon(Icons.g_mobiledata, size: 30),
+            label: const Text('Continuar con Google'),
+          ),
           const SizedBox(height: 10),
           OutlinedButton(
             onPressed: () {

@@ -49,3 +49,5 @@ app.*.map.json
 
 # Paquete de Canvas generado, sin recursión ni duplicados en Git.
 entrega1/*.zip
+
+node_modules/
