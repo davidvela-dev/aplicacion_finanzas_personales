@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'device_service.dart';
 
 /// Capa de acceso a Firebase Authentication.
 /// Las vistas solo llaman a estos métodos; así la lógica de Firebase
@@ -44,8 +46,23 @@ class AuthService {
     );
     final user = cred.user!;
     await user.updateDisplayName(nombre.trim());
-    await user.sendEmailVerification(); // Email Verification
-    // Recarga para que displayName ya esté actualizado en currentUser.
+
+    // Guardar perfil inmediatamente en Firestore (requerimiento Entrega 2).
+    final deviceToken = await DeviceService.tokenDispositivo();
+    await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).set({
+      'nombre': nombre.trim(),
+      'email': correo.trim(),
+      'deviceToken': deviceToken,
+      'fotoPath': null,
+      'umbral': 80.0,
+      'modoOscuro': false,
+      'ocultarMontos': false,
+      'avisarLimite': true,
+      'recordatorio': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    await user.sendEmailVerification();
     await user.reload();
     return _auth.currentUser ?? user;
   }
