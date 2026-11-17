@@ -60,9 +60,7 @@ class WidgetCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 5),
-
           Text(
             monto,
             style: TextStyle(

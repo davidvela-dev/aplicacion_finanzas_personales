@@ -62,7 +62,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1000856025383',
     projectId: 'proyecto-dispositivos-mo-ef110',
     storageBucket: 'proyecto-dispositivos-mo-ef110.firebasestorage.app',
-    iosClientId: '1000856025383-71h1qrc1vnsbn73fbji7iav27gfhbgvk.apps.googleusercontent.com',
+    iosClientId:
+        '1000856025383-71h1qrc1vnsbn73fbji7iav27gfhbgvk.apps.googleusercontent.com',
     iosBundleId: 'com.example.aplicacionFinanzasPersonales',
   );
   static const FirebaseOptions macos = FirebaseOptions(
@@ -71,7 +72,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1000856025383',
     projectId: 'proyecto-dispositivos-mo-ef110',
     storageBucket: 'proyecto-dispositivos-mo-ef110.firebasestorage.app',
-    iosClientId: '1000856025383-71h1qrc1vnsbn73fbji7iav27gfhbgvk.apps.googleusercontent.com',
+    iosClientId:
+        '1000856025383-71h1qrc1vnsbn73fbji7iav27gfhbgvk.apps.googleusercontent.com',
     iosBundleId: 'com.example.aplicacionFinanzasPersonales',
   );
 

@@ -14,23 +14,40 @@ class ReportesView extends StatefulWidget {
 
 class _ReportesViewState extends State<ReportesView> {
   String _periodo = 'Mes';
+
   @override
   Widget build(BuildContext context) {
     final datos = context.watch<FinanzasProvider>();
-    final categorias = datos.categorias
-        .where((c) => c.nombre != 'Ingreso')
-        .toList();
-    final esMes = _periodo == 'Mes';
-    final valores = esMes
-        ? [4100.0, 4684.0, datos.gastos]
-        : _periodo == 'Trimestre'
-        ? [11800.0, 13200.0, 14003.0]
-        : [42000.0, 48500.0, 51200.0];
-    final etiquetas = esMes
-        ? ['Jul', 'Ago', 'Sep']
-        : _periodo == 'Trimestre'
-        ? ['Ene–Mar', 'Abr–Jun', 'Jul–Sep']
-        : ['2024', '2025', '2026'];
+    final categorias =
+        datos.categorias.where((c) => c.nombre != 'Ingreso').toList();
+
+    final List<({String etiqueta, double monto})> serie = switch (_periodo) {
+      'Trimestre' => datos
+          .gastoTrimestral(trimestres: 3)
+          .map(
+            (e) => (
+              etiqueta: _etiquetaTrimestre(e.trimestre),
+              monto: e.monto,
+            ),
+          )
+          .toList(),
+      'Año' => datos
+          .gastoAnual(anios: 3)
+          .map((e) => (etiqueta: '${e.anio.year}', monto: e.monto))
+          .toList(),
+      _ => datos
+          .gastoMensual(meses: 3)
+          .map((e) => (etiqueta: mesCorto(e.mes), monto: e.monto))
+          .toList(),
+    };
+
+    final valores = [for (final s in serie) s.monto];
+    final etiquetas = [for (final s in serie) s.etiqueta];
+
+    final ahora = DateTime.now();
+    final diasMes = DateTime(ahora.year, ahora.month + 1, 0).day;
+    final promedioDiario = diasMes == 0 ? 0.0 : datos.gastoMesActual / diasMes;
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -68,9 +85,9 @@ class _ReportesViewState extends State<ReportesView> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Septiembre · toca la gráfica para explorar',
-                style: TextStyle(fontSize: 11),
+              Text(
+                '${mesLargo(ahora)} · toca la gráfica para explorar',
+                style: const TextStyle(fontSize: 11),
               ),
               Stack(
                 alignment: Alignment.center,
@@ -130,7 +147,7 @@ class _ReportesViewState extends State<ReportesView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                esMes
+                _periodo == 'Mes'
                     ? 'Evolución mensual'
                     : 'Evolución por ${_periodo.toLowerCase()}',
                 style: const TextStyle(
@@ -140,7 +157,7 @@ class _ReportesViewState extends State<ReportesView> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Histórico ilustrativo de la muestra',
+                'Histórico real de tus movimientos',
                 style: TextStyle(fontSize: 11),
               ),
               const SizedBox(height: 20),
@@ -159,14 +176,14 @@ class _ReportesViewState extends State<ReportesView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Promedio diario · septiembre',
+                      'Promedio diario · ${mesLargoSinAnio(ahora)}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     Text(
-                      dinero(datos.gastos / 30),
+                      dinero(promedioDiario),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -178,8 +195,85 @@ class _ReportesViewState extends State<ReportesView> {
             ],
           ),
         ),
-        const EtiquetaDemo(),
+        const SizedBox(height: 16),
+        // Comparativa mes actual vs anterior (#7)
+        _ComparativaMensual(datos: datos),
       ],
+    );
+  }
+
+  String _etiquetaTrimestre(DateTime inicioTrimestre) {
+    final trimestre = ((inicioTrimestre.month - 1) ~/ 3) + 1;
+    final anio = inicioTrimestre.year.toString().substring(2);
+    return 'T$trimestre\'$anio';
+  }
+}
+
+class _ComparativaMensual extends StatelessWidget {
+  const _ComparativaMensual({required this.datos});
+  final FinanzasProvider datos;
+
+  @override
+  Widget build(BuildContext context) {
+    final actual = datos.gastoMesActual;
+    final anterior = datos.gastoMesAnterior;
+    final variacion =
+        anterior <= 0 ? 0.0 : (actual - anterior) / anterior * 100;
+
+    final Color color;
+    final IconData icono;
+    final String texto;
+    if (anterior <= 0 && actual > 0) {
+      color = Colores.azul;
+      icono = Icons.insights_outlined;
+      texto = 'Primer mes con gastos. Aún no hay comparación.';
+    } else if (variacion > 5) {
+      color = Colores.rojo;
+      icono = Icons.trending_up;
+      texto =
+          'Gastaste ${variacion.toStringAsFixed(0)}% más que el mes anterior.';
+    } else if (variacion < -5) {
+      color = Colores.verde;
+      icono = Icons.trending_down;
+      texto =
+          'Gastaste ${(-variacion).toStringAsFixed(0)}% menos que el mes anterior. ¡Bien!';
+    } else {
+      color = Colores.azul;
+      icono = Icons.trending_flat;
+      texto = 'Tu gasto es similar al mes anterior.';
+    }
+
+    return Tarjeta(
+      child: Row(
+        children: [
+          Icon(icono, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Comparativa mensual',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  texto,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Este mes: ${dinero(actual)} · Anterior: ${dinero(anterior)}',
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

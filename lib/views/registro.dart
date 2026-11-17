@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:provider/provider.dart';
-
-import '../constants/rutas.dart';
 import '../services/auth_service.dart';
-import '../viewmodels/finanzas_provider.dart';
 import '../widgets/componentes.dart';
 
 class RegistroView extends StatefulWidget {
@@ -21,6 +17,7 @@ class _RegistroViewState extends State<RegistroView> {
   bool _cargando = false;
   bool _acepta = false;
   bool _ocultar = true;
+
   @override
   void dispose() {
     _nombre.dispose();
@@ -37,17 +34,13 @@ class _RegistroViewState extends State<RegistroView> {
     }
     setState(() => _cargando = true);
     try {
-      final user = await AuthService.registrar(
-        _nombre.text,
-        _correo.text,
-        _clave.text,
-      );
-      if (!mounted) return;
-      context.read<FinanzasProvider>().iniciarSesion(
-        AuthService.nombreDe(user),
-      );
-      Navigator.pushNamedAndRemoveUntil(context, Rutas.inicio, (_) => false);
-      aviso(context, 'Cuenta creada. Te enviamos un correo para verificarla.');
+      await AuthService.registrar(_nombre.text, _correo.text, _clave.text);
+      if (mounted) {
+        aviso(
+          context,
+          'Cuenta creada. Te enviamos un correo para verificarla.',
+        );
+      }
     } catch (e) {
       if (mounted) aviso(context, AuthService.mensaje(e));
     } finally {
@@ -57,91 +50,83 @@ class _RegistroViewState extends State<RegistroView> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Crear cuenta')),
-    body: Form(
-      key: _formulario,
-      child: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          const Encabezado(
-            titulo: 'Empieza con calma.',
-            subtitulo: 'El primer paso para conocer tus finanzas.',
-          ),
-          const MarcaSaldo(),
-          const SizedBox(height: 26),
-          TextFormField(
-            controller: _nombre,
-            decoration: const InputDecoration(labelText: 'Nombre completo'),
-            validator: (v) =>
-                (v ?? '').trim().isEmpty ? 'Escribe tu nombre' : null,
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _correo,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'Correo electrónico'),
-            validator: (v) =>
-                !(v ?? '').contains('@') ? 'Escribe un correo válido' : null,
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _clave,
-            obscureText: _ocultar,
-            decoration: InputDecoration(
-              labelText: 'Contraseña',
-              helperText: 'Al menos 6 caracteres',
-              suffixIcon: IconButton(
-                tooltip: 'Ver contraseña',
-                onPressed: () => setState(() => _ocultar = !_ocultar),
-                icon: Icon(
-                  _ocultar
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined,
+        appBar: AppBar(title: const Text('Crear cuenta')),
+        body: Form(
+          key: _formulario,
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              const Encabezado(
+                titulo: 'Empieza con calma.',
+                subtitulo: 'El primer paso para conocer tus finanzas.',
+              ),
+              const MarcaSaldo(),
+              const SizedBox(height: 26),
+              TextFormField(
+                controller: _nombre,
+                decoration: const InputDecoration(labelText: 'Nombre completo'),
+                validator: (v) =>
+                    (v ?? '').trim().isEmpty ? 'Escribe tu nombre' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _correo,
+                keyboardType: TextInputType.emailAddress,
+                decoration:
+                    const InputDecoration(labelText: 'Correo electrónico'),
+                validator: (v) => !(v ?? '').contains('@')
+                    ? 'Escribe un correo válido'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _clave,
+                obscureText: _ocultar,
+                decoration: InputDecoration(
+                  labelText: 'Contraseña',
+                  helperText: 'Al menos 6 caracteres',
+                  suffixIcon: IconButton(
+                    tooltip: 'Ver contraseña',
+                    onPressed: () => setState(() => _ocultar = !_ocultar),
+                    icon: Icon(
+                      _ocultar
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                  ),
+                ),
+                validator: (v) =>
+                    (v ?? '').length < 6 ? 'Usa al menos 6 caracteres' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                obscureText: _ocultar,
+                decoration:
+                    const InputDecoration(labelText: 'Confirmar contraseña'),
+                validator: (v) =>
+                    v != _clave.text ? 'Las contraseñas no coinciden' : null,
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _acepta,
+                onChanged: (v) => setState(() => _acepta = v ?? false),
+                title: const Text(
+                  'Acepto el aviso de privacidad',
+                  style: TextStyle(fontSize: 14),
                 ),
               ),
-            ),
-            validator: (v) =>
-                (v ?? '').length < 6 ? 'Usa al menos 6 caracteres' : null,
+              FilledButton(
+                onPressed: _cargando ? null : _crearCuenta,
+                child: _cargando
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Crear mi cuenta'),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          TextFormField(
-            obscureText: _ocultar,
-            decoration: const InputDecoration(
-              labelText: 'Confirmar contraseña',
-            ),
-            validator: (v) =>
-                v != _clave.text ? 'Las contraseñas no coinciden' : null,
-          ),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            value: _acepta,
-            onChanged: (v) => setState(() => _acepta = v ?? false),
-            title: const Text(
-              'Acepto el aviso de privacidad',
-              style: TextStyle(fontSize: 14),
-            ),
-          ),
-          TextButton(
-            onPressed: () => mostrarPendiente(
-              context,
-              'Privacidad',
-              'La app guardará los movimientos en el dispositivo. El aviso definitivo se agregará antes de publicar la app.',
-            ),
-            child: const Text('Consultar aviso'),
-          ),
-          FilledButton(
-            onPressed: _cargando ? null : _crearCuenta,
-            child: _cargando
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Crear mi cuenta'),
-          ),
-          const EtiquetaDemo(),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }

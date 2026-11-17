@@ -30,10 +30,52 @@ class _CategoriasViewState extends State<CategoriasView> {
     Icons.local_cafe_outlined,
     Icons.favorite_outline,
   ];
+
   @override
   void dispose() {
     _nombre.dispose();
     super.dispose();
+  }
+
+  Future<bool> _confirmarEliminar(Categoria categoria) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Eliminar categoría?'),
+        content: Text(
+          'Se eliminará "${categoria.nombre}" y su presupuesto asociado. '
+          'Los movimientos existentes no se borrarán.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  Future<void> _eliminar(Categoria categoria) async {
+    final id = categoria.id;
+    if (id == null) {
+      aviso(context, 'No se puede eliminar: falta el id.');
+      return;
+    }
+    final datos = context.read<FinanzasProvider>();
+    try {
+      await datos.eliminarCategoria(id);
+      if (!mounted) return;
+      aviso(context, 'Categoría eliminada.');
+    } catch (e) {
+      if (!mounted) return;
+      aviso(context, 'No se pudo eliminar: $e');
+    }
   }
 
   @override
@@ -49,24 +91,60 @@ class _CategoriasViewState extends State<CategoriasView> {
             subtitulo:
                 '${datos.categorias.length} categorías para organizarte.',
           ),
+          if (datos.categorias.isEmpty)
+            const Tarjeta(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'No tienes categorías todavía.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
           for (final categoria in datos.categorias)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: categoria.color.withValues(alpha: 0.13),
-                    child: Icon(categoria.icono, color: categoria.color),
+              child: Dismissible(
+                key: ValueKey(categoria.id ?? categoria.nombre),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 24),
+                  decoration: BoxDecoration(
+                    color: Colores.rojo,
+                    borderRadius: BorderRadius.circular(22),
                   ),
-                  title: Text(
-                    categoria.nombre,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                  child: const Icon(Icons.delete_outline, color: Colors.white),
+                ),
+                confirmDismiss: (_) => _confirmarEliminar(categoria),
+                onDismissed: (_) => _eliminar(categoria),
+                child: Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: categoria.color.withValues(alpha: 0.13),
+                      child: Icon(categoria.icono, color: categoria.color),
                     ),
-                  ),
-                  subtitle: Text(
-                    '${datos.movimientos.where((m) => m.categoria == categoria.nombre).length} movimientos de muestra',
+                    title: Text(
+                      categoria.nombre,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${datos.movimientos.where((m) => m.categoria == categoria.nombre).length} movimientos',
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Colores.rojo,
+                      ),
+                      tooltip: 'Eliminar categoría',
+                      onPressed: () async {
+                        final ok = await _confirmarEliminar(categoria);
+                        if (ok) await _eliminar(categoria);
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -84,6 +162,7 @@ class _CategoriasViewState extends State<CategoriasView> {
                 TextField(
                   controller: _nombre,
                   maxLength: 24,
+                  textInputAction: TextInputAction.done,
                   decoration: const InputDecoration(
                     labelText: 'Nombre de la categoría',
                   ),
@@ -141,7 +220,7 @@ class _CategoriasViewState extends State<CategoriasView> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final nombre = _nombre.text.trim();
                       if (nombre.isEmpty) {
                         aviso(context, 'Escribe un nombre para la categoría.');
@@ -153,23 +232,30 @@ class _CategoriasViewState extends State<CategoriasView> {
                         aviso(context, 'Esta categoría ya existe.');
                         return;
                       }
-                      datos.agregarCategoria(
-                        Categoria(nombre, _iconos[_icono], _colores[_color]),
+                      final nueva = Categoria(
+                        nombre: nombre,
+                        icono: _iconos[_icono],
+                        color: _colores[_color],
                       );
-                      _nombre.clear();
-                      FocusScope.of(context).unfocus();
-                      aviso(
-                        context,
-                        'Categoría agregada a la muestra. Guardado permanente pendiente.',
-                      );
+
+                      try {
+                        await datos.agregarCategoria(nueva);
+                        if (!context.mounted) return;
+
+                        _nombre.clear();
+                        FocusScope.of(context).unfocus();
+                        aviso(context, 'Categoría "$nombre" creada.');
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        aviso(context, 'No se pudo crear: $e');
+                      }
                     },
-                    child: const Text('Crear categoría de muestra'),
+                    child: const Text('Crear categoría'),
                   ),
                 ),
               ],
             ),
           ),
-          const EtiquetaDemo(),
         ],
       ),
     );

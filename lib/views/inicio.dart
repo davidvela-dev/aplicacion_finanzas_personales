@@ -18,7 +18,7 @@ class InicioView extends StatelessWidget {
       children: [
         Encabezado(
           titulo: 'Hola, ${datos.nombre}',
-          subtitulo: 'SEPTIEMBRE 2026 · TU RESUMEN',
+          subtitulo: '${mesLargo(DateTime.now()).toUpperCase()} · TU RESUMEN',
           accion: IconButton(
             tooltip: datos.ocultarMontos ? 'Mostrar montos' : 'Ocultar montos',
             onPressed: () => datos.cambiarPrivacidad(!datos.ocultarMontos),
@@ -135,7 +135,6 @@ class InicioView extends StatelessWidget {
             ],
           ),
         ),
-        const EtiquetaDemo(),
       ],
     );
   }
@@ -155,79 +154,114 @@ class _Resumen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(13),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+        padding: const EdgeInsets.all(13),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icono, size: 14, color: color),
-            const SizedBox(width: 5),
-            Text(
-              titulo,
-              style: const TextStyle(color: Color(0xFFDCEAE3), fontSize: 12),
+            Row(
+              children: [
+                Icon(icono, size: 14, color: color),
+                const SizedBox(width: 5),
+                Text(
+                  titulo,
+                  style:
+                      const TextStyle(color: Color(0xFFDCEAE3), fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            FittedBox(
+              child: Text(
+                monto,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        FittedBox(
-          child: Text(
-            monto,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 17,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+      );
 }
 
+/// Gráfica de barras con datos reales. Barras proporcionales al máximo
+/// del período, con headroom vertical para que la más alta no toque el techo.
 class BarrasSemanales extends StatelessWidget {
   const BarrasSemanales({super.key});
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 94,
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        for (var i = 0; i < 7; i++)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Tooltip(
-                    message:
-                        'Gasto de ejemplo: ${dinero([160.0, 240.0, 110.0, 300.0, 190.0, 85.0, 35.0][i])}',
-                    child: Container(
-                      height: [36.0, 56.0, 25.0, 70.0, 44.0, 20.0, 10.0][i],
-                      decoration: BoxDecoration(
-                        color: i == 3
-                            ? Colores.verde
-                            : Colores.verde.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(5),
+  Widget build(BuildContext context) {
+    final datos = context.watch<FinanzasProvider>();
+    final serie = datos.gastoDiario(dias: 7);
+    final maxMonto = serie.fold<double>(0, (p, c) => c.monto > p ? c.monto : p);
+    final hoy = DateTime.now();
+    const letrasDia = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    final colorVacio = Theme.of(context).colorScheme.surfaceContainerHighest;
+
+    return SizedBox(
+      height: 110, // sube de 94 a 110 para dar aire en la parte superior
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (var i = 0; i < serie.length; i++)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Tooltip(
+                      message: serie[i].monto <= 0
+                          ? 'Sin gasto'
+                          : 'Gasto: ${datos.ocultarMontos ? '••••' : dinero(serie[i].monto)}',
+                      child: Container(
+                        height: _alturaBarra(serie[i].monto, maxMonto),
+                        decoration: BoxDecoration(
+                          color: serie[i].monto <= 0
+                              ? colorVacio
+                              : (serie[i].dia.year == hoy.year &&
+                                      serie[i].dia.month == hoy.month &&
+                                      serie[i].dia.day == hoy.day
+                                  ? Colores.verde
+                                  : Colores.verde.withValues(alpha: 0.35)),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    ['L', 'M', 'M', 'J', 'V', 'S', 'D'][i],
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      letrasDia[serie[i].dia.weekday - 1],
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: serie[i].dia.day == hoy.day
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: serie[i].dia.day == hoy.day
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
+
+  /// Altura proporcional al máximo. Deja ~20 px de aire en la parte superior
+  /// (contenedor 110 px, gap 8 px, texto 14 px, barra máx. 68 px).
+  double _alturaBarra(double monto, double maxMonto) {
+    const minAltura = 6.0;
+    const maxAltura = 68.0;
+    if (monto <= 0 || maxMonto <= 0) return minAltura;
+    final proporcion = (monto / maxMonto).clamp(0.0, 1.0);
+    return minAltura + proporcion * (maxAltura - minAltura);
+  }
 }
