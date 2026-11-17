@@ -20,13 +20,11 @@ ThemeData crearTema(Brightness brillo) {
   return ThemeData(
     useMaterial3: true,
     colorScheme: esquema,
-    scaffoldBackgroundColor: esOscuro
-        ? const Color(0xFF101915)
-        : const Color(0xFFF5F7F3),
+    scaffoldBackgroundColor:
+        esOscuro ? const Color(0xFF101915) : const Color(0xFFF5F7F3),
     appBarTheme: AppBarTheme(
-      backgroundColor: esOscuro
-          ? const Color(0xFF101915)
-          : const Color(0xFFF5F7F3),
+      backgroundColor:
+          esOscuro ? const Color(0xFF101915) : const Color(0xFFF5F7F3),
       foregroundColor: esquema.onSurface,
       surfaceTintColor: Colors.transparent,
       centerTitle: false,
@@ -64,7 +62,6 @@ ThemeData crearTema(Brightness brillo) {
 String dinero(double cantidad) {
   final partes = cantidad.abs().toStringAsFixed(2).split('.');
   var entero = '';
-  // Agregar una coma antes de cada grupo de tres dígitos, contando desde la derecha.
   for (var i = 0; i < partes[0].length; i++) {
     if (i > 0 && (partes[0].length - i) % 3 == 0) {
       entero += ',';
@@ -73,3 +70,46 @@ String dinero(double cantidad) {
   }
   return '${cantidad < 0 ? '-' : ''}\$$entero.${partes[1]}';
 }
+
+// ---- Helpers de fecha (evita etiquetas hardcodeadas) ----
+const _mesesLargos = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
+const _mesesCortos = [
+  'Ene',
+  'Feb',
+  'Mar',
+  'Abr',
+  'May',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dic',
+];
+
+/// "Noviembre 2026"
+String mesLargo(DateTime d) => '${_mesesLargos[d.month - 1]} ${d.year}';
+
+/// "Noviembre"
+String mesLargoSinAnio(DateTime d) => _mesesLargos[d.month - 1];
+
+/// "Nov"
+String mesCorto(DateTime d) => _mesesCortos[d.month - 1];
+
+/// "12 NOV 2026"
+String fechaLarga(DateTime d) =>
+    '${d.day} ${_mesesCortos[d.month - 1].toUpperCase()} ${d.year}';

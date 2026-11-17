@@ -10,6 +10,8 @@ analyzer: # configuracion del motor de analisis de dart
     - macos/**
     - linux/**
     - .dart_tool/** #
+  errors: 
+    deprecated_member_use: ignore
 
 linter: # reglas de estilo
   rules: 
