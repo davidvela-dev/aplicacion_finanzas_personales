@@ -10,21 +10,22 @@ Future<void> mostrarPendiente(
   BuildContext context,
   String titulo,
   String texto,
-) => showDialog<void>(
-  context: context,
-  builder: (context) => AlertDialog(
-    title: Text(titulo),
-    content: Text(
-      '$texto\n\nFuncionalidad pendiente para la siguiente entrega.',
-    ),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Entendido'),
+) =>
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(titulo),
+        content: Text(
+          '$texto\n\nFuncionalidad pendiente para la siguiente entrega.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Entendido'),
+          ),
+        ],
       ),
-    ],
-  ),
-);
+    );
 
 void aviso(BuildContext context, String texto) =>
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
@@ -34,31 +35,31 @@ class MarcaSaldo extends StatelessWidget {
   final bool grande;
   @override
   Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        padding: EdgeInsets.all(grande ? 17 : 9),
-        decoration: BoxDecoration(
-          color: Colores.verde,
-          borderRadius: BorderRadius.circular(grande ? 24 : 14),
-        ),
-        child: Icon(
-          Icons.account_balance_wallet_outlined,
-          size: grande ? 38 : 24,
-          color: Colors.white,
-        ),
-      ),
-      const SizedBox(width: 12),
-      Text(
-        'saldo',
-        style: TextStyle(
-          fontSize: grande ? 40 : 26,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -1.5,
-        ),
-      ),
-    ],
-  );
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(grande ? 17 : 9),
+            decoration: BoxDecoration(
+              color: Colores.verde,
+              borderRadius: BorderRadius.circular(grande ? 24 : 14),
+            ),
+            child: Icon(
+              Icons.account_balance_wallet_outlined,
+              size: grande ? 38 : 24,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'saldo',
+            style: TextStyle(
+              fontSize: grande ? 40 : 26,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -1.5,
+            ),
+          ),
+        ],
+      );
 }
 
 class Tarjeta extends StatelessWidget {
@@ -71,8 +72,8 @@ class Tarjeta extends StatelessWidget {
   final EdgeInsets padding;
   @override
   Widget build(BuildContext context) => Card(
-    child: Padding(padding: padding, child: child),
-  );
+        child: Padding(padding: padding, child: child),
+      );
 }
 
 class Encabezado extends StatelessWidget {
@@ -87,52 +88,52 @@ class Encabezado extends StatelessWidget {
   final Widget? accion;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 22),
-    child: Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                titulo,
-                style: const TextStyle(
-                  fontSize: 29,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
-                ),
+        padding: const EdgeInsets.only(bottom: 22),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titulo,
+                    style: const TextStyle(
+                      fontSize: 29,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitulo,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitulo,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
+            ),
+            accion ?? const SizedBox.shrink(),
+          ],
         ),
-        accion ?? const SizedBox.shrink(),
-      ],
-    ),
-  );
+      );
 }
 
 class EtiquetaDemo extends StatelessWidget {
   const EtiquetaDemo({super.key});
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 18, bottom: 8),
-    child: Text(
-      'VISTA PREVIA · DATOS DE EJEMPLO',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 10,
-        letterSpacing: 1.5,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
-    ),
-  );
+        padding: const EdgeInsets.only(top: 18, bottom: 8),
+        child: Text(
+          'VISTA PREVIA · DATOS DE EJEMPLO',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 10,
+            letterSpacing: 1.5,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
 }
 
 class FilaMovimiento extends StatelessWidget {
@@ -143,16 +144,21 @@ class FilaMovimiento extends StatelessWidget {
   Widget build(BuildContext context) {
     final datos = context.watch<FinanzasProvider>();
     final categoria = datos.categoria(movimiento.categoria);
+
+    // Protección contra nulos
+    final colorCat = categoria?.color ?? Colores.azul;
+    final iconoCat = categoria?.icono ?? Icons.monetization_on_outlined;
+
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       leading: Container(
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: categoria.color.withValues(alpha: 0.13),
+          color: colorCat.withValues(alpha: 0.13),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Icon(categoria.icono, color: categoria.color, size: 22),
+        child: Icon(iconoCat, color: colorCat, size: 22),
       ),
       title: Text(
         movimiento.titulo,
@@ -176,13 +182,12 @@ class FilaMovimiento extends StatelessWidget {
               : null,
         ),
       ),
-      onTap:
-          onTap ??
+      onTap: onTap ??
           () => Navigator.pushNamed(
-            context,
-            Rutas.edicion,
-            arguments: movimiento,
-          ),
+                context,
+                Rutas.edicion,
+                arguments: movimiento,
+              ),
     );
   }
 }

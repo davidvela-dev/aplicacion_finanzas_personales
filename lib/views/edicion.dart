@@ -18,7 +18,7 @@ class _EdicionViewState extends State<EdicionView> {
   final _nota = TextEditingController();
   bool _esIngreso = false;
   String _categoria = 'Alimentación';
-  DateTime _fecha = DateTime(2026, 9, 3);
+  DateTime _fecha = DateTime.now();
   Movimiento? _anterior;
   bool _cargado = false;
 
@@ -45,23 +45,19 @@ class _EdicionViewState extends State<EdicionView> {
     super.dispose();
   }
 
-  void _guardar() {
+  void _guardar() async {
     if (!_formulario.currentState!.validate()) return;
-    context.read<FinanzasProvider>().guardarMovimiento(
-      Movimiento(
-        titulo: _nota.text.trim(),
-        categoria: _esIngreso ? 'Ingreso' : _categoria,
-        monto: double.parse(_monto.text.replaceAll(',', '.')),
-        fecha: _fecha,
-        esIngreso: _esIngreso,
-      ),
-      anterior: _anterior,
-    );
-    Navigator.pop(context);
-    aviso(
-      context,
-      'Movimiento actualizado en la muestra. El guardado permanente está pendiente.',
-    );
+    await context.read<FinanzasProvider>().guardarMovimiento(
+          Movimiento(
+            id: _anterior?.id, // Clave para actualizar en Firebase
+            titulo: _nota.text.trim(),
+            categoria: _esIngreso ? 'Ingreso' : _categoria,
+            monto: double.parse(_monto.text.replaceAll(',', '.')),
+            fecha: _fecha,
+            esIngreso: _esIngreso,
+          ),
+        );
+    if (mounted) Navigator.pop(context);
   }
 
   Future<void> _borrar() async {
@@ -69,9 +65,7 @@ class _EdicionViewState extends State<EdicionView> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('¿Eliminar movimiento?'),
-        content: const Text(
-          'Se quitará de los datos de muestra de esta sesión.',
-        ),
+        content: const Text('Se borrará de tu cuenta permanentemente.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -85,8 +79,8 @@ class _EdicionViewState extends State<EdicionView> {
       ),
     );
     if (confirmar != true || !mounted) return;
-    context.read<FinanzasProvider>().eliminarMovimiento(_anterior!);
-    Navigator.pop(context);
+    await context.read<FinanzasProvider>().eliminarMovimiento(_anterior!.id!);
+    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -94,13 +88,12 @@ class _EdicionViewState extends State<EdicionView> {
     final datos = context.watch<FinanzasProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _anterior == null ? 'Nuevo movimiento' : 'Editar movimiento',
-        ),
+        title:
+            Text(_anterior == null ? 'Nuevo movimiento' : 'Editar movimiento'),
         actions: [
           if (_anterior != null)
             IconButton(
-              tooltip: 'Eliminar movimiento',
+              tooltip: 'Eliminar',
               onPressed: _borrar,
               icon: const Icon(Icons.delete_outline),
             ),
@@ -111,7 +104,7 @@ class _EdicionViewState extends State<EdicionView> {
         child: FilledButton.icon(
           onPressed: _guardar,
           icon: const Icon(Icons.check),
-          label: const Text('Guardar en la muestra'),
+          label: const Text('Guardar'),
         ),
       ),
       body: Form(
@@ -119,13 +112,6 @@ class _EdicionViewState extends State<EdicionView> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            const Text(
-              'Cada movimiento cuenta.',
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text('Regístralo para tener una vista más clara.'),
-            const SizedBox(height: 24),
             Row(
               children: [
                 for (final ingreso in [false, true])
@@ -143,11 +129,9 @@ class _EdicionViewState extends State<EdicionView> {
             ),
             const SizedBox(height: 24),
             TextFormField(
-              key: const ValueKey('monto'),
               controller: _monto,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
                 labelText: 'Monto en MXN',
@@ -155,8 +139,8 @@ class _EdicionViewState extends State<EdicionView> {
               ),
               validator: (v) {
                 final monto = double.tryParse((v ?? '').replaceAll(',', '.'));
-                return monto == null || !monto.isFinite || monto <= 0
-                    ? 'Escribe un monto mayor que cero'
+                return monto == null || monto <= 0
+                    ? 'Escribe un monto válido'
                     : null;
               },
             ),
@@ -176,11 +160,8 @@ class _EdicionViewState extends State<EdicionView> {
                       : c.nombre != 'Ingreso',
                 ))
                   ChoiceChip(
-                    avatar: Icon(
-                      categoria.icono,
-                      size: 17,
-                      color: categoria.color,
-                    ),
+                    avatar:
+                        Icon(categoria.icono, size: 17, color: categoria.color),
                     label: Text(categoria.nombre),
                     selected: _esIngreso || _categoria == categoria.nombre,
                     onSelected: (_) =>
@@ -214,7 +195,6 @@ class _EdicionViewState extends State<EdicionView> {
             ),
             const SizedBox(height: 18),
             TextFormField(
-              key: const ValueKey('nota'),
               controller: _nota,
               maxLength: 60,
               decoration: const InputDecoration(
@@ -225,13 +205,6 @@ class _EdicionViewState extends State<EdicionView> {
               validator: (v) =>
                   (v ?? '').trim().isEmpty ? 'Agrega una descripción' : null,
             ),
-            const SizedBox(height: 16),
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            const EtiquetaDemo(),
           ],
         ),
       ),

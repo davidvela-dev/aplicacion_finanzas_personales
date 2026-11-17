@@ -5,31 +5,127 @@ import '../constants/tema.dart';
 import '../viewmodels/finanzas_provider.dart';
 import '../widgets/componentes.dart';
 
+class _Alerta {
+  final String id;
+  final String titulo;
+  final String detalle;
+  final IconData icono;
+  final Color color;
+  const _Alerta(this.id, this.titulo, this.detalle, this.icono, this.color);
+}
+
 class AlertasView extends StatelessWidget {
   const AlertasView({super.key});
+
+  List<_Alerta> _construirAlertas(FinanzasProvider datos) {
+    final alertas = <_Alerta>[];
+
+    // 1) Comparativa mes actual vs mes anterior (#7)
+    final actual = datos.gastoMesActual;
+    final anterior = datos.gastoMesAnterior;
+    if (anterior > 0) {
+      final variacion = (actual - anterior) / anterior * 100;
+      if (variacion > 10) {
+        alertas.add(
+          _Alerta(
+            'mes_mas_gasto',
+            'Gastaste ${variacion.toStringAsFixed(0)}% más este mes',
+            'Llevas ${dinero(actual)} este mes vs ${dinero(anterior)} el anterior.',
+            Icons.trending_up,
+            Colores.rojo,
+          ),
+        );
+      } else if (variacion < -10) {
+        alertas.add(
+          _Alerta(
+            'mes_menos_gasto',
+            'Gastaste ${(-variacion).toStringAsFixed(0)}% menos este mes',
+            'Llevas ${dinero(actual)} este mes vs ${dinero(anterior)} el anterior. ¡Buen ritmo!',
+            Icons.trending_down,
+            Colores.verde,
+          ),
+        );
+      } else if (actual > 0) {
+        alertas.add(
+          _Alerta(
+            'mes_similar',
+            'Gasto similar al mes anterior',
+            'Este mes ${dinero(actual)}, el anterior ${dinero(anterior)}.',
+            Icons.trending_flat,
+            Colores.azul,
+          ),
+        );
+      }
+    } else if (actual > 0) {
+      alertas.add(
+        _Alerta(
+          'primer_mes',
+          'Primer mes con gastos registrados',
+          'Aún no hay mes anterior para comparar. Este mes llevas ${dinero(actual)}.',
+          Icons.insights_outlined,
+          Colores.azul,
+        ),
+      );
+    }
+
+    // 2) Alertas por presupuesto (#6: solo si el usuario las habilitó)
+    if (datos.avisarLimite) {
+      for (final entry in datos.presupuestos.entries) {
+        final cat = entry.key;
+        final limite = entry.value;
+        if (limite <= 0) continue;
+        final gasto = datos.gastoCategoria(cat);
+        final pct = gasto / limite * 100;
+        final icono = datos.categoria(cat)?.icono ??
+            Icons.account_balance_wallet_outlined;
+        if (pct >= 100) {
+          alertas.add(
+            _Alerta(
+              'presupuesto_excedido_$cat',
+              'Excediste el presupuesto de $cat',
+              'Gastaste ${dinero(gasto)} de ${dinero(limite)} '
+                  '(${pct.toStringAsFixed(0)}%).',
+              icono,
+              Colores.rojo,
+            ),
+          );
+        } else if (pct >= datos.umbral) {
+          alertas.add(
+            _Alerta(
+              'presupuesto_umbral_$cat',
+              'Presupuesto de $cat al ${pct.toStringAsFixed(0)}%',
+              'Llevas ${dinero(gasto)} de ${dinero(limite)}.',
+              icono,
+              Colores.naranja,
+            ),
+          );
+        }
+      }
+    }
+
+    // 3) Estado vacío
+    if (datos.movimientos.isEmpty) {
+      alertas.add(
+        const _Alerta(
+          'sin_movimientos',
+          'Aún no hay movimientos',
+          'Agrega tu primer movimiento para empezar a ver alertas personalizadas.',
+          Icons.info_outline,
+          Colores.azul,
+        ),
+      );
+    }
+
+    return alertas;
+  }
+
   @override
   Widget build(BuildContext context) {
     final datos = context.watch<FinanzasProvider>();
-    final alertas = [
-      (
-        'Revisa Entretenimiento',
-        'El gasto de muestra es ${dinero(datos.gastoCategoria('Entretenimiento'))} de un límite de ${dinero(datos.presupuestos['Entretenimiento']!)}.',
-        Icons.movie_outlined,
-        Colores.morado,
-      ),
-      (
-        'Cuida tu alimentación',
-        'Has usado ${(datos.gastoCategoria('Alimentación') / datos.presupuestos['Alimentación']! * 100).round()}% del presupuesto de Alimentación.',
-        Icons.restaurant_outlined,
-        Colores.naranja,
-      ),
-      (
-        'Tu resumen está listo',
-        'En Reportes puedes revisar la distribución de tus gastos.',
-        Icons.insights_outlined,
-        Colores.verde,
-      ),
-    ];
+    final alertas = _construirAlertas(datos);
+    final sinLeer =
+        alertas.where((a) => !datos.alertasLeidas.contains(a.id)).length;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Alertas')),
       body: ListView(
@@ -37,21 +133,20 @@ class AlertasView extends StatelessWidget {
         children: [
           Encabezado(
             titulo: 'Un aviso a tiempo.',
-            subtitulo:
-                '${3 - datos.alertasLeidas.length} sin leer · alertas de muestra',
+            subtitulo: '$sinLeer sin leer',
           ),
-          for (var i = 0; i < alertas.length; i++)
+          for (final alerta in alertas)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Card(
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
                   leading: CircleAvatar(
-                    backgroundColor: alertas[i].$4.withValues(alpha: 0.13),
-                    child: Icon(alertas[i].$3, color: alertas[i].$4),
+                    backgroundColor: alerta.color.withValues(alpha: 0.13),
+                    child: Icon(alerta.icono, color: alerta.color),
                   ),
                   title: Text(
-                    alertas[i].$1,
+                    alerta.titulo,
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -60,17 +155,19 @@ class AlertasView extends StatelessWidget {
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 7),
                     child: Text(
-                      alertas[i].$2,
+                      alerta.detalle,
                       style: const TextStyle(fontSize: 12),
                     ),
                   ),
                   trailing: Icon(
-                    datos.alertasLeidas.contains(i) ? Icons.done : Icons.circle,
-                    size: datos.alertasLeidas.contains(i) ? 18 : 8,
+                    datos.alertasLeidas.contains(alerta.id)
+                        ? Icons.done
+                        : Icons.circle,
+                    size: datos.alertasLeidas.contains(alerta.id) ? 18 : 8,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   onTap: () {
-                    datos.leerAlerta(i);
+                    datos.leerAlerta(alerta.id);
                     aviso(context, 'Alerta marcada como leída.');
                   },
                 ),
@@ -90,7 +187,6 @@ class AlertasView extends StatelessWidget {
                     'Aviso al acercarse al límite',
                     style: TextStyle(fontSize: 14),
                   ),
-                  subtitle: const Text('Preferencia de muestra'),
                   value: datos.avisarLimite,
                   onChanged: datos.cambiarAviso,
                 ),
@@ -125,30 +221,12 @@ class AlertasView extends StatelessWidget {
                     'Recordatorio diario',
                     style: TextStyle(fontSize: 14),
                   ),
-                  subtitle: const Text(
-                    'Todos los días a las 21:00 · vista previa',
-                  ),
                   value: datos.recordatorio,
-                  onChanged: (v) {
-                    datos.cambiarRecordatorio(v);
-                    if (v) {
-                      mostrarPendiente(
-                        context,
-                        'Recordatorio de captura',
-                        'Aquí se programará una notificación local a las 21:00. El interruptor solo modifica la preferencia visual.',
-                      );
-                    }
-                  },
+                  onChanged: datos.cambiarRecordatorio,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 18),
-          const Text(
-            'Las notificaciones del dispositivo se integrarán en la siguiente etapa.',
-            style: TextStyle(fontSize: 12),
-          ),
-          const EtiquetaDemo(),
         ],
       ),
     );

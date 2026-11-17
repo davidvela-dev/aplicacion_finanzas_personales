@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/rutas.dart';
+import '../constants/tema.dart';
+import '../models/movimiento.dart';
 import '../viewmodels/finanzas_provider.dart';
 import '../widgets/componentes.dart';
 
@@ -14,6 +16,28 @@ class MovimientosView extends StatefulWidget {
 class _MovimientosViewState extends State<MovimientosView> {
   String _filtro = 'Todos';
   String _busqueda = '';
+
+  Future<bool> _confirmarEliminar(Movimiento m) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Eliminar movimiento?'),
+        content: Text('Se borrará "${m.titulo}" permanentemente.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final datos = context.watch<FinanzasProvider>();
@@ -23,10 +47,11 @@ class _MovimientosViewState extends State<MovimientosView> {
               (_filtro == 'Todos' ||
                   (_filtro == 'Ingresos' ? m.esIngreso : !m.esIngreso)) &&
               '${m.titulo} ${m.categoria}'.toLowerCase().contains(
-                _busqueda.toLowerCase(),
-              ),
+                    _busqueda.toLowerCase(),
+                  ),
         )
         .toList();
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 86),
       children: [
@@ -60,7 +85,7 @@ class _MovimientosViewState extends State<MovimientosView> {
         ),
         const SizedBox(height: 20),
         Text(
-          'SEPTIEMBRE 2026 · ${lista.length} MOVIMIENTOS',
+          '${mesLargo(DateTime.now()).toUpperCase()} · ${lista.length} MOVIMIENTOS',
           style: const TextStyle(fontSize: 10, letterSpacing: 1.2),
         ),
         const SizedBox(height: 12),
@@ -77,23 +102,50 @@ class _MovimientosViewState extends State<MovimientosView> {
         for (final movimiento in lista)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                    child: Text(
-                      '${movimiento.fecha.day} SEP 2026',
-                      style: const TextStyle(fontSize: 10),
+            child: Dismissible(
+              key: ValueKey(movimiento.id ?? movimiento.hashCode),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 24),
+                decoration: BoxDecoration(
+                  color: Colores.rojo,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: const Icon(Icons.delete_outline, color: Colors.white),
+              ),
+              confirmDismiss: (_) => _confirmarEliminar(movimiento),
+              onDismissed: (_) async {
+                final id = movimiento.id;
+                if (id == null) return;
+                try {
+                  await datos.eliminarMovimiento(id);
+                  if (context.mounted) {
+                    aviso(context, 'Movimiento eliminado.');
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    aviso(context, 'No se pudo eliminar: $e');
+                  }
+                }
+              },
+              child: Card(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: Text(
+                        fechaLarga(movimiento.fecha).toUpperCase(),
+                        style: const TextStyle(fontSize: 10),
+                      ),
                     ),
-                  ),
-                  FilaMovimiento(movimiento: movimiento),
-                ],
+                    FilaMovimiento(movimiento: movimiento),
+                  ],
+                ),
               ),
             ),
           ),
-        const EtiquetaDemo(),
       ],
     );
   }

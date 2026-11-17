@@ -8,9 +8,8 @@ class WidgetGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double valorMaximo = valores.isEmpty
-        ? 1.0
-        : valores.reduce((a, b) => a > b ? a : b);
+    final double valorMaximo =
+        valores.isEmpty ? 1.0 : valores.reduce((a, b) => a > b ? a : b);
 
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -23,7 +22,6 @@ class WidgetGraph extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 15),
-
           SizedBox(
             height: 100,
             child: Row(
@@ -50,7 +48,6 @@ class WidgetGraph extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: dias.map((dia) {
